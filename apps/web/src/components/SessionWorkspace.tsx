@@ -98,7 +98,6 @@ export function SessionWorkspace({ children }: { children: ReactNode }) {
   const [panes, setPanes] = useState<Pane[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [zoomed, setZoomed] = useState(false);
-  const [columns, setColumns] = useState(2);
   const frames = useRef(new Map<string, HTMLIFrameElement>());
   const embedded = isSessionPane();
 
@@ -214,20 +213,6 @@ export function SessionWorkspace({ children }: { children: ReactNode }) {
             {panes.length}/{MAX_PANES}
           </span>
         </span>
-        {[1, 2, 3].map((count) => (
-          <Button
-            key={count}
-            size="compact"
-            variant={columns === count ? "secondary" : "ghost"}
-            aria-pressed={columns === count}
-            onClick={() => {
-              setColumns(count);
-              setZoomed(false);
-            }}
-          >
-            {count} {count === 1 ? "column" : "columns"}
-          </Button>
-        ))}
         <Button
           size="compact"
           variant="outline"
@@ -249,10 +234,9 @@ export function SessionWorkspace({ children }: { children: ReactNode }) {
         </Button>
       </div>
       <div
-        className="grid min-h-0 flex-1 gap-1 overflow-auto p-1"
+        className="grid min-h-0 flex-1 grid-rows-1 gap-1 overflow-hidden p-1"
         style={{
-          gridTemplateColumns: `repeat(${zoomed ? 1 : Math.min(columns, panes.length)}, minmax(0, 1fr))`,
-          gridTemplateRows: `repeat(${zoomed ? 1 : Math.ceil(panes.length / columns)}, minmax(0, 1fr))`,
+          gridTemplateColumns: `repeat(${zoomed ? 1 : panes.length}, minmax(0, 1fr))`,
         }}
       >
         {panes.map((pane, index) => (
