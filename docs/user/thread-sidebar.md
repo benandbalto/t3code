@@ -55,18 +55,34 @@ in a new thread's model picker to add or remove them. A regular click returns to
 single model. Choose a base branch and send. Each selection starts a separate thread
 and worktree while you stay in the new thread composer. This requires a Git project.
 
-## View threads in tiles
+## View threads in workspaces
 
-Choose **Tile chat sessions** beside the sidebar search, or press `Ctrl+Alt+Enter`,
-to view several sessions together. Each pane has its own sidebar: use its sidebar
-toggle to choose an existing thread or start a new one. Add up to eight sessions
-in one horizontal row, with one equal-width column per session.
+Use **Open session workspace** beside the sidebar search to choose a server or
+project. It fills one horizontal row with that scope's active sessions, including
+idle sessions and sessions waiting for your input. Each session gets a column,
+up to eight at a time. **Previous sessions** and **Next sessions** reach the rest.
+Archived and deleted threads, subagents, and side chats stay out of the row.
+
+Press `Ctrl+Alt+S` to open the focused session's server workspace, or `Ctrl+Alt+P`
+for its project. Open each of your remote servers once, then switch their tabs
+with `Ctrl+Alt+1` through `Ctrl+Alt+8`. Each workspace remembers its slot
+assignments and page while the app stays open. Only the selected workspace's
+views are loaded; agents keep running on their servers when you switch.
+
+**Refresh sessions** reloads the row from the server's current session list.
+This keeps new activity from rearranging your slots while you work. Enable
+**Include settled** to also load settled and snoozed sessions.
+
+For a custom row, choose **Choose sessions manually** or press `Ctrl+Alt+Enter`
+outside a workspace. Each slot has its own sidebar for choosing a thread or
+starting one. Inside a workspace, `Ctrl+Alt+Enter` adds an empty slot when the
+row has fewer than eight sessions.
 
 Click a pane to focus it. Use `Ctrl+Alt+Left` and `Ctrl+Alt+Right` to switch panes,
-`Ctrl+Alt+Enter` to add one, and `Ctrl+Alt+Z` to zoom the focused pane or restore
-the row. Zooming keeps the other panes mounted. Closing a pane or choosing
-**Exit tiles** leaves its agent running. The tile layout lasts until you exit or
-reload the app; your threads remain available in the sidebar.
+and `Ctrl+Alt+Z` to zoom the focused pane or restore the row. Zooming keeps the
+other panes mounted. **Exit tiles** returns to the normal view and keeps your
+workspace tabs available until reload. **Close workspace** removes that tab.
+Closing a pane or workspace leaves its agent running.
 
 ## Pin and reorder threads
 
