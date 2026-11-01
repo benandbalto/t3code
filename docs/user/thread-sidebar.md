@@ -55,6 +55,19 @@ in a new thread's model picker to add or remove them. A regular click returns to
 single model. Choose a base branch and send. Each selection starts a separate thread
 and worktree while you stay in the new thread composer. This requires a Git project.
 
+## View threads in tiles
+
+Choose **Tile chat sessions** beside the sidebar search, or press `Ctrl+Alt+Enter`,
+to view several sessions together. Each pane has its own sidebar: use its sidebar
+toggle to choose an existing thread or start a new one. Add up to eight sessions
+and choose one, two, or three columns.
+
+Click a pane to focus it. Use `Ctrl+Alt+Left` and `Ctrl+Alt+Right` to switch panes,
+`Ctrl+Alt+Enter` to add one, and `Ctrl+Alt+Z` to zoom the focused pane or restore
+the grid. Zooming keeps the other panes mounted. Closing a pane or choosing
+**Exit tiles** leaves its agent running. The tile layout lasts until you exit or
+reload the app; your threads remain available in the sidebar.
+
 ## Pin and reorder threads
 
 Pin a thread from its menu to keep it above your active work.

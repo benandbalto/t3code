@@ -1,3 +1,4 @@
+import { TileSessionsButton } from "../SessionWorkspace";
 import { FolderPlusIcon, SearchIcon, SquarePenIcon, XIcon } from "lucide-react";
 import {
   type ComponentProps,
@@ -102,6 +103,7 @@ export function SidebarThreadHeader({
         ) : null}
       </div>
       <div className="flex shrink-0 items-center">
+        <TileSessionsButton />
         {hasProjects ? (
           <>
             {projectScope}

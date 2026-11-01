@@ -87,7 +87,7 @@ import {
   threadContextReference,
   environmentContextReference,
 } from "./lib/composerContextRecords";
-import { create } from "zustand";
+import { create, useStore } from "zustand";
 import { persist, type PersistStorage, type StorageValue } from "zustand/middleware";
 import { useShallow } from "zustand/react/shallow";
 import { createDeferredStorage, createMemoryStorage } from "./lib/storage";
@@ -2473,7 +2473,7 @@ function toHydratedDraftThreadState(
   };
 }
 
-const composerDraftStore = create<ComposerDraftStoreState>()(
+const localComposerDraftStore = create<ComposerDraftStoreState>()(
   persist(
     (setBase, get) => {
       const set = setBase;
@@ -4222,7 +4222,26 @@ const composerDraftStore = create<ComposerDraftStoreState>()(
   ),
 );
 
-export const useComposerDraftStore = composerDraftStore;
+declare global {
+  interface Window {
+    t3SessionComposerStore?: typeof localComposerDraftStore;
+  }
+}
+
+// Tiles share one draft store so concurrent composers cannot overwrite each other's persistence.
+const composerDraftStore =
+  typeof window !== "undefined" && window.name === "t3-session-pane" && window.parent !== window
+    ? (window.parent.t3SessionComposerStore ?? localComposerDraftStore)
+    : localComposerDraftStore;
+if (typeof window !== "undefined") window.t3SessionComposerStore = composerDraftStore;
+
+function useSharedComposerDraft(): ComposerDraftStoreState;
+function useSharedComposerDraft<T>(selector: (state: ComposerDraftStoreState) => T): T;
+function useSharedComposerDraft<T>(selector?: (state: ComposerDraftStoreState) => T) {
+  return useStore(composerDraftStore, (state) => (selector ? selector(state) : state));
+}
+
+export const useComposerDraftStore = Object.assign(useSharedComposerDraft, composerDraftStore);
 
 export function subscribeComposerDraftModelReconciliation(input: {
   readonly registry: AtomRegistry.AtomRegistry;
