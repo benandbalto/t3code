@@ -6,6 +6,10 @@ import * as Schema from "effect/Schema";
 
 export const MAX_SESSION_PANES = 8;
 
+export function sessionWorkspaceFrameUrl(route: string, isDesktop: boolean) {
+  return isDesktop ? `/#${route}` : route;
+}
+
 export type SessionWorkspaceScope =
   | { kind: "server"; environmentId: EnvironmentId }
   | { kind: "project"; environmentId: EnvironmentId; projectId: ProjectId };

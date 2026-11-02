@@ -6,12 +6,20 @@ import {
   sessionWorkspacePanes,
   sessionWorkspacePage,
   restoreSessionWorkspaces,
+  sessionWorkspaceFrameUrl,
 } from "./sessionWorkspace.logic";
 
 const serverA = EnvironmentId.make("vm-a");
 const serverB = EnvironmentId.make("vm-b");
 const project = ProjectId.make("same-project-id");
 const now = "2026-11-01T12:00:00.000Z";
+
+it("opens the requested session in desktop hash history and web browser history", () => {
+  const route = "/vm-a/thread%3Aone?view=chat#latest";
+  expect(sessionWorkspaceFrameUrl(route, true)).toBe(`/#${route}`);
+  expect(sessionWorkspaceFrameUrl(route, false)).toBe(route);
+  expect(sessionWorkspaceFrameUrl("/", true)).toBe("/#/");
+});
 
 function thread(id: string, overrides: Parameters<typeof makeThreadFixture>[0] = {}) {
   return makeThreadFixture({

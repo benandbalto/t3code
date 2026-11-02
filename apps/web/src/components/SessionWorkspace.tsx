@@ -12,6 +12,7 @@ import * as DateTime from "effect/DateTime";
 import { Columns2Icon, Maximize2Icon, Minimize2Icon, PlusIcon, XIcon } from "lucide-react";
 
 import { Button } from "./ui/button";
+import { isElectron } from "../env";
 import { cn, randomUUID } from "../lib/utils";
 import { useThreadRouteRef } from "../hooks/useThreadRouteTarget";
 import { useProjects, useQuietThreadShell, useQuietThreadShells } from "../state/entities";
@@ -31,6 +32,7 @@ import {
   MAX_SESSION_PANES,
   SESSION_WORKSPACES_STORAGE_KEY,
   restoreSessionWorkspaces,
+  sessionWorkspaceFrameUrl,
   sessionWorkspaceId,
   sessionWorkspacePanes,
   sessionWorkspacePage,
@@ -177,6 +179,7 @@ export function SessionWorkspace({ children }: { children: ReactNode }) {
 }
 
 function SessionWorkspaceManager({ children }: { children: ReactNode }) {
+  const href = useLocation({ select: (location) => location.href });
   const [restored] = useState(() => {
     try {
       return restoreSessionWorkspaces(window.localStorage.getItem(SESSION_WORKSPACES_STORAGE_KEY));
@@ -354,7 +357,7 @@ function SessionWorkspaceManager({ children }: { children: ReactNode }) {
   function openManual() {
     const first = {
       id: randomUUID(),
-      url: `${window.location.pathname}${window.location.search}${window.location.hash}`,
+      url: href,
     };
     const id = randomUUID();
     setWorkspaces([
@@ -450,6 +453,12 @@ function SessionWorkspaceManager({ children }: { children: ReactNode }) {
   return (
     <PaneLauncherContext value={launcher}>
       <div className="flex h-dvh min-w-0 flex-1 flex-col bg-background text-foreground">
+        {isElectron ? (
+          <div
+            className="drag-region h-[var(--workspace-topbar-height)] shrink-0 border-b"
+            aria-hidden="true"
+          />
+        ) : null}
         <div
           className="flex shrink-0 flex-wrap items-center gap-2 border-b px-3 py-2"
           role="toolbar"
@@ -633,7 +642,7 @@ function SessionFrame({
   register: (frame: HTMLIFrameElement | null) => void;
 }) {
   // Keep the initial src stable: navigation inside the pane must not reload its app.
-  const [src] = useState(pane.url);
+  const [src] = useState(() => sessionWorkspaceFrameUrl(pane.url, isElectron));
   return (
     <iframe
       ref={register}
