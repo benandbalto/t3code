@@ -81,7 +81,7 @@ row has fewer than eight sessions.
 Click a pane to focus it. Use `Ctrl+Alt+Left` and `Ctrl+Alt+Right` to switch panes,
 and `Ctrl+Alt+Z` to zoom the focused pane or restore the row. Zooming keeps the
 other panes mounted. **Exit tiles** returns to the normal view and keeps your
-workspace tabs available until reload. **Close workspace** removes that tab.
+workspace tabs available. Tabs, session order, the selected workspace, and its page restore when you reopen the app. **Close workspace** removes that tab.
 Closing a pane or workspace leaves its agent running.
 
 ## Pin and reorder threads

@@ -1,7 +1,8 @@
 import { scopedThreadKey } from "@t3tools/client-runtime/environment";
 import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/models";
 import { effectiveSnoozed } from "@t3tools/client-runtime/state/thread-settled";
-import { isListedThreadLineage, type EnvironmentId, type ProjectId } from "@t3tools/contracts";
+import { isListedThreadLineage, EnvironmentId, ProjectId } from "@t3tools/contracts";
+import * as Schema from "effect/Schema";
 
 export const MAX_SESSION_PANES = 8;
 
@@ -21,6 +22,80 @@ export type SessionWorkspaceState = {
   includeSettled: boolean;
   revision: number;
 };
+
+export const SESSION_WORKSPACES_STORAGE_KEY = "t3code:session-workspaces:v1";
+
+const PersistedWorkspaces = Schema.Struct({
+  version: Schema.Literal(1),
+  selectedId: Schema.NullOr(Schema.String),
+  zoomed: Schema.Boolean,
+  workspaces: Schema.Array(
+    Schema.Struct({
+      id: Schema.String,
+      label: Schema.String,
+      scope: Schema.NullOr(
+        Schema.Union([
+          Schema.Struct({ kind: Schema.Literal("server"), environmentId: EnvironmentId }),
+          Schema.Struct({
+            kind: Schema.Literal("project"),
+            environmentId: EnvironmentId,
+            projectId: ProjectId,
+          }),
+        ]),
+      ),
+      panes: Schema.Array(
+        Schema.Struct({
+          id: Schema.String,
+          url: Schema.String,
+          title: Schema.optionalKey(Schema.String),
+        }),
+      ),
+      activeId: Schema.NullOr(Schema.String),
+      page: Schema.Number,
+      includeSettled: Schema.Boolean,
+    }),
+  ),
+});
+const decodeWorkspaces = Schema.decodeUnknownSync(PersistedWorkspaces);
+
+export function restoreSessionWorkspaces(raw: string | null): {
+  workspaces: SessionWorkspaceState[];
+  selectedId: string | null;
+  zoomed: boolean;
+} {
+  try {
+    if (!raw) throw new Error("No saved workspaces");
+    const saved = decodeWorkspaces(JSON.parse(raw));
+    const ids = new Set<string>();
+    const workspaces = saved.workspaces.flatMap((workspace) => {
+      if (ids.has(workspace.id)) return [];
+      ids.add(workspace.id);
+      const paneIds = new Set<string>();
+      const panes = workspace.panes.flatMap((pane) => {
+        if (paneIds.has(pane.id) || !/^\/(?!\/)[^\\\u0000-\u001f]*$/.test(pane.url)) return [];
+        paneIds.add(pane.id);
+        return [{ ...pane }];
+      });
+      return [
+        {
+          ...workspace,
+          panes,
+          activeId: panes.some((pane) => pane.id === workspace.activeId)
+            ? workspace.activeId
+            : null,
+          page: sessionWorkspacePage({ panes, page: Math.trunc(workspace.page) }).page,
+          revision: 0,
+        },
+      ];
+    });
+    const selectedId = workspaces.some((workspace) => workspace.id === saved.selectedId)
+      ? saved.selectedId
+      : null;
+    return { workspaces, selectedId, zoomed: selectedId !== null && saved.zoomed };
+  } catch {
+    return { workspaces: [], selectedId: null, zoomed: false };
+  }
+}
 
 export function sessionWorkspaceId(scope: SessionWorkspaceScope) {
   return JSON.stringify(

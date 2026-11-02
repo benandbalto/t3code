@@ -50,6 +50,23 @@ With `origin` on git.cafe, work through GitCafe and leave GitHub's API alone:
 
 ## Choosing a dev process
 
+### T3 Workspaces fork on macOS
+
+Build this fork with `vp run dist:desktop:dmg`. Install **T3 Workspaces (Beta).app**
+from the resulting `release/T3-Workspaces-*.dmg` into Applications. The installed
+app runs independently of the checkout and does not need a development server.
+
+The fork uses `~/.t3-workspaces/userdata` for server state and
+`~/Library/Application Support/t3workspaces` for its Electron profile, including
+saved workspace layouts. It does not migrate the upstream app's profile or claim
+its `t3code:` links. Add remote machines in **Settings → Environments → Add environment → SSH**.
+
+Local builds have no automatic update feed. To update, pull the fork's branch,
+run `vp i`, rebuild the DMG, quit the fork, and replace its app in Applications.
+The data directories survive replacement. Release builds may use
+`T3CODE_DESKTOP_UPDATE_REPOSITORY=benandbalto/t3code`; upstream and other update
+repositories are rejected so an upstream release cannot overwrite the fork.
+
 Use `vp run dev` for server and web, or `vp run dev:desktop` for the Electron client.
 `dev:server` and `dev:web` start those processes separately.
 See the [mobile README](../../apps/mobile/README.md) for native builds and Metro.

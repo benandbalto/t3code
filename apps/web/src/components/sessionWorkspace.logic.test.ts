@@ -5,6 +5,7 @@ import {
   sessionWorkspaceId,
   sessionWorkspacePanes,
   sessionWorkspacePage,
+  restoreSessionWorkspaces,
 } from "./sessionWorkspace.logic";
 
 const serverA = EnvironmentId.make("vm-a");
@@ -116,5 +117,81 @@ describe("sessionWorkspacePage", () => {
       panes: panes.slice(0, 8),
     });
     expect(sessionWorkspacePage({ panes: [], page: 2 })).toEqual({ page: 0, pages: 1, panes: [] });
+  });
+});
+
+describe("restoreSessionWorkspaces", () => {
+  it("restores remote scopes, slot order, selection, pages, and hidden workspaces", () => {
+    const scope = { kind: "project", environmentId: serverA, projectId: project } as const;
+    const panes = sessionWorkspacePanes(
+      Array.from({ length: 10 }, (_, index) => thread(String(index))),
+      scope,
+      true,
+      now,
+    );
+    const workspace = {
+      id: sessionWorkspaceId(scope),
+      label: "VM A",
+      scope,
+      panes: panes.toReversed(),
+      activeId: panes[0]!.id,
+      page: 1,
+      includeSettled: true,
+      revision: 4,
+    };
+    const saved = { version: 1, workspaces: [workspace], selectedId: workspace.id, zoomed: true };
+    expect(restoreSessionWorkspaces(JSON.stringify(saved))).toEqual({
+      workspaces: [{ ...workspace, revision: 0 }],
+      selectedId: workspace.id,
+      zoomed: true,
+    });
+    expect(restoreSessionWorkspaces(JSON.stringify({ ...saved, selectedId: null }))).toEqual({
+      workspaces: [{ ...workspace, revision: 0 }],
+      selectedId: null,
+      zoomed: false,
+    });
+  });
+
+  it("recovers from corrupt storage and rejects unsafe or duplicate pane URLs", () => {
+    for (const raw of [null, "{", "{}", '{"version":2}']) {
+      expect(restoreSessionWorkspaces(raw)).toEqual({
+        workspaces: [],
+        selectedId: null,
+        zoomed: false,
+      });
+    }
+    const workspace = {
+      id: "manual",
+      label: "Manual",
+      scope: null,
+      panes: [
+        { id: "valid", url: "/vm-a/thread?view=chat#latest" },
+        { id: "valid", url: "/duplicate" },
+        ...[
+          "https://evil.example/",
+          "//evil.example/",
+          "/\\evil.example/",
+          "javascript:alert(1)",
+        ].map((url) => ({ id: url, url })),
+      ],
+      activeId: "removed",
+      page: 100,
+      includeSettled: false,
+    };
+    const restored = restoreSessionWorkspaces(
+      JSON.stringify({
+        version: 1,
+        workspaces: [workspace, workspace],
+        selectedId: "missing",
+        zoomed: true,
+      }),
+    );
+    expect(restored).toEqual({
+      workspaces: [
+        { ...workspace, panes: [workspace.panes[0]], activeId: null, page: 0, revision: 0 },
+      ],
+      selectedId: null,
+      zoomed: false,
+    });
   });
 });

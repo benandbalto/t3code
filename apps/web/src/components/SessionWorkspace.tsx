@@ -29,6 +29,8 @@ import {
 } from "./ui/menu";
 import {
   MAX_SESSION_PANES,
+  SESSION_WORKSPACES_STORAGE_KEY,
+  restoreSessionWorkspaces,
   sessionWorkspaceId,
   sessionWorkspacePanes,
   sessionWorkspacePage,
@@ -175,9 +177,27 @@ export function SessionWorkspace({ children }: { children: ReactNode }) {
 }
 
 function SessionWorkspaceManager({ children }: { children: ReactNode }) {
-  const [workspaces, setWorkspaces] = useState<SessionWorkspaceState[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [zoomed, setZoomed] = useState(false);
+  const [restored] = useState(() => {
+    try {
+      return restoreSessionWorkspaces(window.localStorage.getItem(SESSION_WORKSPACES_STORAGE_KEY));
+    } catch {
+      return restoreSessionWorkspaces(null);
+    }
+  });
+  const [workspaces, setWorkspaces] = useState(restored.workspaces);
+  const [selectedId, setSelectedId] = useState(restored.selectedId);
+  const [zoomed, setZoomed] = useState(restored.zoomed);
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- saves workspace layout outside React so it survives app restarts
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        SESSION_WORKSPACES_STORAGE_KEY,
+        JSON.stringify({ version: 1, workspaces, selectedId, zoomed }),
+      );
+    } catch {
+      // Storage can be unavailable or full; keep this window usable.
+    }
+  }, [workspaces, selectedId, zoomed]);
   const frames = useRef(new Map<string, HTMLIFrameElement>());
   const { environments } = useEnvironments();
   const primaryEnvironmentId = usePrimaryEnvironmentId();
