@@ -147,6 +147,18 @@ const withIdentity = <A, E, R>(
 };
 
 describe("DesktopAppIdentity", () => {
+  it.effect("uses an explicit test profile even when another profile exists", () =>
+    withIdentity(
+      Effect.gen(function* () {
+        const identity = yield* DesktopAppIdentity.DesktopAppIdentity;
+        assert.equal(yield* identity.resolveUserDataPath, "/tmp/workspaces-test-profile");
+      }),
+      {
+        legacyPathExists: true,
+        environment: { env: { T3CODE_DESKTOP_USER_DATA_DIR: " /tmp/workspaces-test-profile " } },
+      },
+    ),
+  );
   it.effect("isolates the V2 profile even when the legacy V1 profile exists", () =>
     withIdentity(
       Effect.gen(function* () {

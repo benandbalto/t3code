@@ -614,6 +614,7 @@ function SessionWorkspaceManager({ children }: { children: ReactNode }) {
               </div>
               <SessionFrame
                 pane={pane}
+                active={pane.id === activeId}
                 index={page * MAX_SESSION_PANES + index}
                 register={(frame) => {
                   if (frame) frames.current.set(pane.id, frame);
@@ -634,10 +635,12 @@ function SessionWorkspaceManager({ children }: { children: ReactNode }) {
 
 function SessionFrame({
   pane,
+  active,
   index,
   register,
 }: {
   pane: Pane;
+  active: boolean;
   index: number;
   register: (frame: HTMLIFrameElement | null) => void;
 }) {
@@ -647,6 +650,7 @@ function SessionFrame({
     <iframe
       ref={register}
       name={PANE_NAME}
+      data-session-active={active}
       title={`Chat session ${index + 1}`}
       src={src}
       className="min-h-0 w-full flex-1 border-0"

@@ -1,3 +1,4 @@
+import { sessionNativeMenuListener } from "../lib/sessionNativeMenu";
 import { SessionWorkspace, isSessionPane } from "./SessionWorkspace";
 import { useAtomValue } from "@effect/atom-react";
 import * as Schema from "effect/Schema";
@@ -356,9 +357,11 @@ function SidebarControl() {
     };
 
     window.addEventListener("keydown", onKeyDown, true);
-    const unsubscribe = window.desktopBridge?.onMenuAction((action) => {
-      if (action === "sidebar.toggle") toggleSidebar();
-    });
+    const unsubscribe = window.desktopBridge?.onMenuAction(
+      sessionNativeMenuListener((action) => {
+        if (action === "sidebar.toggle") toggleSidebar();
+      }),
+    );
     return () => {
       window.removeEventListener("keydown", onKeyDown, true);
       unsubscribe?.();

@@ -1,3 +1,4 @@
+import { sessionNativeMenuListener } from "../lib/sessionNativeMenu";
 import { useAtomValue } from "@effect/atom-react";
 import {
   scopeProjectRef,
@@ -178,9 +179,11 @@ export function ReopenClosedViewShortcut() {
       if (!event.repeat) enqueueReopen();
     };
     window.addEventListener("keydown", onKeyDown, true);
-    const unsubscribe = window.desktopBridge?.onMenuAction((action) => {
-      if (action === "view.reopenClosed" && !isCommandPaletteOpen()) enqueueReopen();
-    });
+    const unsubscribe = window.desktopBridge?.onMenuAction(
+      sessionNativeMenuListener((action) => {
+        if (action === "view.reopenClosed" && !isCommandPaletteOpen()) enqueueReopen();
+      }),
+    );
     return () => {
       window.removeEventListener("keydown", onKeyDown, true);
       unsubscribe?.();

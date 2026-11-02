@@ -65,8 +65,8 @@ Archived and deleted threads, subagents, and side chats stay out of the row.
 
 Press `Ctrl+Alt+S` to open the focused session's server workspace, or `Ctrl+Alt+P`
 for its project. Open each of your remote servers once, then switch their tabs
-with `Ctrl+Alt+1` through `Ctrl+Alt+8`. Each workspace remembers its slot
-assignments and page while the app stays open. Only the selected workspace's
+with `Ctrl+Alt+1` through `Ctrl+Alt+8`. Each workspace saves its slot
+assignments and page across restarts. Only the selected workspace's
 views are loaded; agents keep running on their servers when you switch.
 
 **Refresh sessions** reloads the row from the server's current session list.

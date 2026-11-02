@@ -529,6 +529,7 @@ it.layer(NodeServices.layer)("build-desktop-artifact", (it) => {
       );
 
       assert.isNull(preview.publish);
+      assert.deepInclude(release.mac, { identity: "-", hardenedRuntime: false });
       assert.isNull(previewChannel.publish);
       assert.deepStrictEqual(release.publish, [
         {

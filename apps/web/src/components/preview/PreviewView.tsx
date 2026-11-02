@@ -1,3 +1,4 @@
+import { sessionNativeMenuListener } from "../../lib/sessionNativeMenu";
 import { scopedThreadKey } from "@t3tools/client-runtime/environment";
 import { settlePromise } from "@t3tools/client-runtime/state/runtime";
 import { previewStreamDownloadUrl } from "@t3tools/client-runtime/preview/server-browser-stream";
@@ -861,9 +862,11 @@ export function PreviewView({
   useEffect(() => {
     if (!visible) return;
     const unsubscribeAction = subscribePreviewAction((action) => onPreviewAction(action));
-    const unsubscribeMenu = window.desktopBridge?.onMenuAction((action) => {
-      if (action === "preview.focusUrl") onPreviewAction("focus-url");
-    });
+    const unsubscribeMenu = window.desktopBridge?.onMenuAction(
+      sessionNativeMenuListener((action) => {
+        if (action === "preview.focusUrl") onPreviewAction("focus-url");
+      }),
+    );
     return () => {
       unsubscribeAction();
       unsubscribeMenu?.();

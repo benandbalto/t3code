@@ -1,153 +1,77 @@
-# T3 Code
+# T3 Workspaces
 
-T3 Code is an "agent harness control surface". It enables control of the agents on your machine with a best-in-class mobile app ([iOS](https://apps.apple.com/us/app/t3-code-remote-claude-more/id6787819824), [Android](https://play.google.com/store/apps/details?id=com.t3tools.t3code)), [web app](https://app.t3.codes) and [Electron-based desktop app](https://t3.codes).
+A tmux-inspired fork of [T3 Code](https://github.com/pingdotgg/t3code) for working with several coding agents side by side. Open a project or remote server as a workspace, arrange up to **eight chat sessions in one horizontal row**, and switch between workspace tabs.
 
-Works with your subscriptions on Claude Code, Codex, Cursor, Grok Build, OpenCode, Google Antigravity, and fx. If they're set up on your computer, T3 Code can control them.
+**Experimental macOS preview · Apple Silicon · macOS 13 or newer · Manual updates**
 
-## "Wait, what are you selling me?"
+[Download the preview](https://github.com/benandbalto/t3code/releases/tag/workspaces-v0.1.6-preview.1) · [Workspace guide](docs/user/thread-sidebar.md#view-threads-in-workspaces) · [Report a problem](https://github.com/benandbalto/t3code/issues)
 
-Nothing. We built T3 Code because we wanted the best possible development experience with agents. We were inspired by existing solutions like the Codex desktop app, Conductor, Claude Desktop and Cursor Glass, but none met our bar.
+![Eight sessions in one horizontal row](https://github.com/benandbalto/t3code/releases/download/workspaces-v0.1.6-preview.1/eight-sessions.png)
 
-We wanted something performant, remote-ready, and truly open. If we ever go the wrong direction, we want you to have everything you need to fork and build the editor that you want.
+## Install on a Mac
 
-## Installation
+1. Download `T3-Workspaces-0.1.6-arm64.dmg` from the [preview release](https://github.com/benandbalto/t3code/releases/tag/workspaces-v0.1.6-preview.1).
+2. Open the DMG and drag **T3 Workspaces (Beta)** into **Applications**.
+3. Open the app. Install and authenticate a [supported agent provider](docs/user/install.md) on each machine where you want agents to run.
 
-> [!WARNING]
-> T3 Code currently supports Codex, Claude, Cursor, Grok Build, OpenCode, Antigravity, and fx. Install and authenticate at least one provider before use:
->
-> - Codex: install [Codex CLI](https://developers.openai.com/codex/cli) and run `codex login`
-> - Claude: install [Claude Code](https://claude.com/product/claude-code) and run `claude auth login`
-> - Cursor: install [Cursor CLI](https://cursor.com/cli) and run `agent login`
-> - Grok Build: install [Grok Build CLI](https://x.ai/cli) and run `grok login`
-> - OpenCode: install [OpenCode](https://opencode.ai) and run `opencode auth login`
-> - Antigravity: enable it in Settings, then use **Install Antigravity** and **Sign in with Google**. No CLI is required.
-> - fx: install [fx](https://fx.sh) and run `fx login` on the machine running the T3 Code server ([setup guide](./docs/user/providers-fx.md))
+This preview has no Apple Developer ID signature or notarization. macOS may block a downloaded copy. If you choose to run it, follow [Apple's instructions for opening an unnotarized app](https://support.apple.com/en-us/102445), including **System Settings → Privacy & Security → Open Anyway** after attempting to open it.
 
-### Command line
+The fork has its own app identity and keeps its data in `~/.t3-workspaces/userdata` and its app profile in `~/Library/Application Support/t3workspaces`. Existing T3 Code data and saved connections are not imported. You can keep both apps installed.
 
-```bash
-curl -fsSL https://t3.codes/install.sh | sh
-```
+## Start a workspace
 
-On Windows, in PowerShell:
+For remote work, go to **Settings → Environments → Add environment → SSH** and enter a host or SSH alias. The app opens the SSH tunnel and starts or reuses the T3 server there. Alternatively, add a pairing URL from an existing server. This preview is based on T3 Code **0.1.6** and uses that published server version for SSH setup.
 
-```powershell
-irm https://t3.codes/install.ps1 | iex
-```
+Open a session on a machine, then use **Open session workspace** beside the sidebar search to choose its server or project. Each session has its own navigation, scrolling, and composer. Active sessions fill the row; **Include settled** includes parked sessions, and **Refresh sessions** updates the snapshot without constantly rearranging your slots. More than eight sessions are available on additional pages.
 
-Then run `t3` to start the server and open the local web app. `t3 service install` keeps it running in the background, `t3 update` moves to a newer release, and `t3 --help` has the full reference.
+| Shortcut                  | Action                                      |
+| ------------------------- | ------------------------------------------- |
+| `Ctrl+Alt+S`              | Open the current server workspace           |
+| `Ctrl+Alt+P`              | Open the current project workspace          |
+| `Ctrl+Alt+1`–`8`          | Switch workspace tabs                       |
+| `Ctrl+Alt+Left` / `Right` | Focus the previous / next session           |
+| `Ctrl+Alt+Enter`          | Open a manual workspace or add a slot       |
+| `Ctrl+Alt+Z`              | Zoom the selected session / restore the row |
 
-To try it once without installing, run `npx t3@latest` instead.
+Workspace tabs, slot assignments, selection, and pages restore after a restart. Closing a view keeps its agents running. Switching workspace tabs reloads their views when you return; unsent text drafts are saved.
 
-### Desktop app
+## Preview support and limitations
 
-Install the latest version of the desktop app from [GitHub Releases](https://github.com/pingdotgg/t3code/releases), or from your favorite package registry:
+- The downloadable app targets **Apple Silicon macOS**. Intel Macs, Windows, Linux, and the upstream mobile clients are not supported by this preview release.
+- Updates are manual: quit T3 Workspaces, download a newer preview, and replace the app in Applications. Keep your data folders to retain sessions and layouts. This build has no automatic update feed.
+- Each visible session runs a full client view. Eight columns work best on a wide display and can use substantially more memory than one session.
+- This is an early preview. See the release notes for the workload actually tested; a short synthetic check is not a full working-day soak or validation of every provider and desktop feature.
+- Share reproducible problems with your macOS version, chip, pane count, provider, connection mode, and steps. Remove pairing codes, credentials, and private transcripts from reports.
 
-#### Windows (`winget`)
-
-```bash
-winget install T3Tools.T3Code
-```
-
-#### Windows (`scoop`)
-
-```bash
-scoop install extras/t3code
-```
-
-#### macOS (Homebrew)
-
-```bash
-brew install --cask t3-code
-```
-
-#### Debian, Ubuntu (`.deb`)
-
-Download the `.deb` from [GitHub Releases](https://github.com/pingdotgg/t3code/releases), then:
-
-```bash
-sudo apt install ./T3-Code-*.deb
-```
-
-#### Arch Linux (AUR)
-
-Stable:
-
-```bash
-yay -S t3code-bin
-```
-
-Nightly:
-
-```bash
-yay -S t3code-nightly-bin
-```
-
-The AUR packaging is maintained in this repository under [`packaging/aur`](./packaging/aur).
-
-#### Nix (nixpkgs)
-
-```bash
-nix profile add github:NixOS/nixpkgs/nixos-unstable#t3code
-```
-
-The package is maintained in [nixpkgs](https://github.com/NixOS/nixpkgs/tree/nixos-unstable/pkgs/by-name/t3/t3code)
-and includes the desktop app (`t3code-desktop`) and the `t3` command.
-See [Nix installation](./docs/user/install.md#nix-nixpkgs) for NixOS configuration and updates.
-
-## Some notes
-
-We are very very early in this project. Expect bugs.
-
-We are (mostly) not accepting contributions yet. Small fixes may be considered. Big features will not be.
-
-## Documentation
-
-Full docs live in [docs/](./docs). There's no docs site yet.
-
-- [FAQ](./docs/user/faq.md)
-- [Install and first run](./docs/user/install.md)
-- [Permission modes](./docs/user/permission-modes.md)
-- [Keyboard shortcuts](./docs/user/keybindings.md)
-- [Project settings](./docs/user/project-settings.md)
-- [Appearance preferences](./docs/user/appearance.md)
-- [Remote access from a phone or another machine](./docs/user/remote-access.md)
-- [Connect Claude Code, Codex, ChatGPT and other agents over MCP](./docs/user/outside-agents.md)
-- [Keeping app and server in sync](./docs/user/updating.md)
-- [Source control integrations](./docs/user/source-control.md)
-- Multiple accounts: [Codex](./docs/user/providers-codex.md) · [Claude](./docs/user/providers-claude.md)
-- [Run T3 Code as a background service](./docs/user/background-service.md)
-
-Building from source? Start at [docs/internals/overview.md](./docs/internals/overview.md).
-
-## If you REALLY want to contribute still.... read this first
+## Build from source
 
 ### Install `vp`
 
-T3 Code uses Vite+ so you'll need to install the global `vp` command-line tool.
+Install [Vite+](https://viteplus.dev/guide/), which manages the Node and package-manager versions pinned by the repository:
 
-#### macOS / Linux
-
-```bash
+```sh
 curl -fsSL https://vite.plus | bash
 ```
 
-#### Windows
+Then clone this fork and install dependencies:
 
-```bash
-irm https://vite.plus/ps1 | iex
-```
-
-Checkout their getting started guide for more information: https://viteplus.dev/guide/
-
-### Install dependencies
-
-```bash
+```sh
+git clone https://github.com/benandbalto/t3code.git
+cd t3code
 vp i
+vp run dev --home-dir .t3
 ```
 
-Read [CONTRIBUTING.md](./CONTRIBUTING.md) before reporting a bug or opening a PR.
+Open the pairing URL printed by the development server. To build the Mac installer, install the Xcode Command Line Tools and [Rust](https://rustup.rs/), then run:
 
-Have a feature request? Start an [Ideas discussion](https://github.com/pingdotgg/t3code/discussions/categories/ideas).
+```sh
+vp run dist:desktop:dmg --arch arm64 --build-version 0.1.6
+```
 
-Need support? Join the [Discord](https://discord.gg/jn4EGJjrvv).
+The installer is written to `release/`. Keep the app version at the published upstream server version unless you also change how SSH server downloads are resolved. See [development and packaging](docs/operations/development.md#t3-workspaces-fork-on-macos) for data directories and update behavior.
+
+## Upstream and license
+
+T3 Workspaces is an independent, experimental fork of [pingdotgg/t3code](https://github.com/pingdotgg/t3code), built by T3 Tools and its contributors. The original project supplies the agent integrations, server, desktop shell, and remote access support. This fork adds the tiled session workspace and its persistence and uses a separate desktop identity. It is not an official T3 Tools release.
+
+[MIT license](LICENSE). Upstream documentation remains in [docs/](docs/); installation links and release procedures there may describe the upstream product.

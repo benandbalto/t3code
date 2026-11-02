@@ -61,7 +61,11 @@ The fork uses `~/.t3-workspaces/userdata` for server state and
 saved workspace layouts. It does not migrate the upstream app's profile or claim
 its `t3code:` links. Add remote machines in **Settings → Environments → Add environment → SSH**.
 
-Local builds have no automatic update feed. To update, pull the fork's branch,
+For isolated desktop verification, set `T3CODE_HOME` to a temporary backend home and
+`T3CODE_DESKTOP_USER_DATA_DIR` to a separate temporary Electron profile. Keep your
+normal `HOME` so macOS can use the login keychain.
+
+Local builds use ad-hoc signing without Developer ID or notarization and have no automatic update feed. To update, pull the fork's branch,
 run `vp i`, rebuild the DMG, quit the fork, and replace its app in Applications.
 The data directories survive replacement. Release builds may use
 `T3CODE_DESKTOP_UPDATE_REPOSITORY=benandbalto/t3code`; upstream and other update

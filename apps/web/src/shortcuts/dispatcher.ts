@@ -1,3 +1,4 @@
+import { sessionNativeMenuListener } from "../lib/sessionNativeMenu";
 import type { KeybindingCommand, ResolvedKeybindingsConfig } from "@t3tools/contracts";
 
 import { resolveShortcutCommand, type ShortcutMatchContext } from "../keybindings";
@@ -133,7 +134,7 @@ function ensureMenuActionListener() {
   const bridge = window.desktopBridge;
   if (typeof bridge?.onMenuAction !== "function") return;
   menuActionInstalled = true;
-  bridge.onMenuAction(dispatchMenuAction);
+  bridge.onMenuAction(sessionNativeMenuListener(dispatchMenuAction));
 }
 
 /** Desktop menu actions; the newest handler for an action wins. */

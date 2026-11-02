@@ -1,3 +1,4 @@
+import { sessionNativeMenuListener } from "../lib/sessionNativeMenu";
 import { ChildThreadApprovals } from "./chat/ChildThreadApprovals";
 import { workspaceAreaProps } from "../lib/workspaceFocus";
 import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
@@ -2743,10 +2744,12 @@ export default function ChatView(props: ChatViewProps) {
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- subscribes to desktop bridge menu actions that toggle the right panel
   useEffect(() => {
     if (embedded) return;
-    return window.desktopBridge?.onMenuAction((action) => {
-      if (action === "rightPanel.toggle") toggleRightPanelStable();
-      else if (action === "rightPanel.toggleMaximized") toggleRightPanelMaximizedStable();
-    });
+    return window.desktopBridge?.onMenuAction(
+      sessionNativeMenuListener((action) => {
+        if (action === "rightPanel.toggle") toggleRightPanelStable();
+        else if (action === "rightPanel.toggleMaximized") toggleRightPanelMaximizedStable();
+      }),
+    );
   }, [embedded, toggleRightPanelStable, toggleRightPanelMaximizedStable]);
 
   usePasteToFocusComposer(embedded ? null : activeThreadId, composerRef);
