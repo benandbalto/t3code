@@ -62,8 +62,9 @@ saved workspace layouts. It does not migrate the upstream app's profile or claim
 its `t3code:` links. Add remote machines in **Settings → Environments → Add environment → SSH**.
 
 For isolated desktop verification, set `T3CODE_HOME` to a temporary backend home and
-`T3CODE_DESKTOP_USER_DATA_DIR` to a separate temporary Electron profile. Keep your
-normal `HOME` so macOS can use the login keychain.
+`T3CODE_DESKTOP_USER_DATA_DIR` to a separate temporary Electron profile. The packaged
+smoke test uses Chromium's mock keychain on macOS to avoid an interactive prompt;
+it does not validate login-keychain integration.
 
 Local builds use ad-hoc signing without Developer ID or notarization and have no automatic update feed. To update, pull the fork's branch,
 run `vp i`, rebuild the DMG, quit the fork, and replace its app in Applications.

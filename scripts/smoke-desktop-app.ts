@@ -7,6 +7,7 @@ import * as NodeOS from "node:os";
 import * as NodePath from "node:path";
 import * as NodeTimersPromises from "node:timers/promises";
 import * as NodeUtil from "node:util";
+import * as HostProcess from "@t3tools/shared/HostProcess";
 import { _electron, type ElectronApplication } from "playwright-core";
 
 // A snapshot from an older build on purpose: the packaged server must migrate it forward, as it
@@ -39,9 +40,9 @@ delete launchEnv.ELECTRON_RUN_AS_NODE;
 try {
   app = await _electron.launch({
     executablePath: executable,
-    // Linux CI runners do not allow the Chromium sandbox's user namespaces.
-    args: ["--no-sandbox"],
-    // Keep the login keychain available while isolating Chromium from any running desktop app.
+    // Disposable macOS profiles must not wait for an interactive login-keychain prompt.
+    args:
+      HostProcess.Platform.defaultValue() === "darwin" ? ["--use-mock-keychain"] : ["--no-sandbox"],
     env: {
       ...launchEnv,
       XDG_CONFIG_HOME: NodePath.join(home, ".config"),
