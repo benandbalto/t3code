@@ -4,13 +4,13 @@ A tmux-inspired fork of [T3 Code](https://github.com/pingdotgg/t3code) for worki
 
 **Experimental macOS preview · Apple Silicon · macOS 13 or newer · Manual updates**
 
-[Download the preview](https://github.com/benandbalto/t3code/releases/tag/workspaces-v0.1.6-preview.1) · [Workspace guide](docs/user/thread-sidebar.md#view-threads-in-workspaces) · [Report a problem](https://github.com/benandbalto/t3code/issues)
+[Download the preview](https://github.com/benandbalto/t3code/releases/tag/workspaces-v0.1.6-preview.2) · [Workspace guide](docs/user/thread-sidebar.md#view-threads-in-workspaces) · [Report a problem](https://github.com/benandbalto/t3code/issues)
 
-![Eight sessions in one horizontal row](https://github.com/benandbalto/t3code/releases/download/workspaces-v0.1.6-preview.1/eight-sessions.png)
+![Eight sessions in one horizontal row](https://github.com/benandbalto/t3code/releases/download/workspaces-v0.1.6-preview.2/eight-sessions.png)
 
 ## Install on a Mac
 
-1. Download `T3-Workspaces-0.1.6-arm64.dmg` from the [preview release](https://github.com/benandbalto/t3code/releases/tag/workspaces-v0.1.6-preview.1).
+1. Download `T3-Workspaces-0.1.6-arm64.dmg` from the [preview release](https://github.com/benandbalto/t3code/releases/tag/workspaces-v0.1.6-preview.2).
 2. Open the DMG and drag **T3 Workspaces (Beta)** into **Applications**.
 3. Open the app. Install and authenticate a [supported agent provider](docs/user/install.md) on each machine where you want agents to run.
 
@@ -33,7 +33,7 @@ Open a session on a machine, then use **Open session workspace** beside the side
 | `Ctrl+Alt+Enter`          | Open a manual workspace or add a slot       |
 | `Ctrl+Alt+Z`              | Zoom the selected session / restore the row |
 
-Workspace tabs, slot assignments, selection, and pages restore after a restart. Closing a view keeps its agents running. Switching workspace tabs reloads their views when you return; unsent text drafts are saved.
+Workspace tabs, slot assignments, selection, and pages restore after a restart. Open workspace tabs keep their current page loaded and connected in the background, so switching back preserves scrolling and unsent drafts without reloading. Keeping more tabs open uses more memory. Close a workspace or exit tiles to unload its views; its agents keep running.
 
 ## Preview support and limitations
 

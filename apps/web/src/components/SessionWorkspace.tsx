@@ -178,6 +178,10 @@ export function SessionWorkspace({ children }: { children: ReactNode }) {
   return <SessionWorkspaceManager>{children}</SessionWorkspaceManager>;
 }
 
+function sessionFrameKey(workspaceId: string, paneId: string) {
+  return JSON.stringify([workspaceId, paneId]);
+}
+
 function SessionWorkspaceManager({ children }: { children: ReactNode }) {
   const href = useLocation({ select: (location) => location.href });
   const [restored] = useState(() => {
@@ -301,7 +305,7 @@ function SessionWorkspaceManager({ children }: { children: ReactNode }) {
 
   function focusPane(id: string) {
     updateWorkspace((current) => ({ ...current, activeId: id }));
-    frames.current.get(id)?.contentWindow?.focus();
+    if (selectedId) frames.current.get(sessionFrameKey(selectedId, id))?.contentWindow?.focus();
   }
 
   function addPane() {
@@ -396,12 +400,17 @@ function SessionWorkspaceManager({ children }: { children: ReactNode }) {
 
   const onMessage = useEffectEvent((event: MessageEvent) => {
     if (event.origin !== window.location.origin) return;
-    const pane = panes.find(
-      (candidate) => frames.current.get(candidate.id)?.contentWindow === event.source,
+    const owner = workspaces.find((item) =>
+      item.panes.some(
+        (pane) =>
+          frames.current.get(sessionFrameKey(item.id, pane.id))?.contentWindow === event.source,
+      ),
     );
-    if (!pane || !event.data || typeof event.data !== "object") return;
-    if (event.data.type === "t3-session-focus")
-      updateWorkspace((current) => ({ ...current, activeId: pane.id }));
+    const pane = owner?.panes.find(
+      (item) =>
+        frames.current.get(sessionFrameKey(owner.id, item.id))?.contentWindow === event.source,
+    );
+    if (!owner || !pane || !event.data || typeof event.data !== "object") return;
     if (event.data.type === "t3-session-location" && typeof event.data.url === "string") {
       if (!event.data.url.startsWith("/") || event.data.url.startsWith("//")) return;
       const url = new URL(event.data.url, window.location.origin);
@@ -409,13 +418,22 @@ function SessionWorkspaceManager({ children }: { children: ReactNode }) {
       const path = `${url.pathname}${url.search}${url.hash}`;
       const title =
         typeof event.data.title === "string" ? event.data.title.slice(0, 256) : undefined;
-      updateWorkspace((current) => ({
-        ...current,
-        panes: current.panes.map((item) =>
-          item.id === pane.id ? { ...item, url: path, title } : item,
+      setWorkspaces((current) =>
+        current.map((item) =>
+          item.id === owner.id
+            ? {
+                ...item,
+                panes: item.panes.map((entry) =>
+                  entry.id === pane.id ? { ...entry, url: path, title } : entry,
+                ),
+              }
+            : item,
         ),
-      }));
+      );
     }
+    if (owner.id !== selectedId) return;
+    if (event.data.type === "t3-session-focus")
+      updateWorkspace((current) => ({ ...current, activeId: pane.id }));
     if (
       event.data.type === "t3-session-command" &&
       (["next", "previous", "add", "zoom", "close", "server", "project"].includes(
@@ -445,7 +463,8 @@ function SessionWorkspaceManager({ children }: { children: ReactNode }) {
 
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- moves browser focus after the active pane changes
   useEffect(() => {
-    if (selectedId && activeId) frames.current.get(activeId)?.contentWindow?.focus();
+    if (selectedId && activeId)
+      frames.current.get(sessionFrameKey(selectedId, activeId))?.contentWindow?.focus();
   }, [activeId, selectedId]);
 
   if (!workspace) return <PaneLauncherContext value={launcher}>{children}</PaneLauncherContext>;
@@ -552,77 +571,94 @@ function SessionWorkspaceManager({ children }: { children: ReactNode }) {
             </Button>
           </div>
         ) : null}
-        {panes.length === 0 ? (
-          <div className="flex flex-1 items-center justify-center p-6 text-sm text-muted-foreground">
-            No sessions loaded. Connect the server, then refresh sessions or enable Include settled.
-          </div>
-        ) : null}
-        <div
-          className={cn(
-            "grid min-h-0 flex-1 grid-rows-1 gap-1 overflow-hidden p-1",
-            panes.length === 0 && "hidden",
-          )}
-          style={{
-            gridTemplateColumns: `repeat(${zoomed ? 1 : Math.max(1, panes.length)}, minmax(0, 1fr))`,
-          }}
-        >
-          {panes.map((pane, index) => (
-            <section
-              key={`${workspace.id}:${workspace.revision}:${pane.id}`}
-              aria-label={`Session ${page * MAX_SESSION_PANES + index + 1}`}
-              className={cn(
-                "flex min-h-0 min-w-0 flex-col overflow-hidden rounded-md border",
-                pane.id === activeId ? "border-ring" : "border-border",
-                zoomed && pane.id !== activeId && "hidden",
-              )}
-            >
-              <div className="flex shrink-0 items-center gap-1 border-b bg-muted/40 px-2 py-1">
-                <Button
-                  size="compact"
-                  variant="ghost"
-                  aria-pressed={pane.id === activeId}
-                  onClick={() => focusPane(pane.id)}
-                >
-                  Session {page * MAX_SESSION_PANES + index + 1}
-                </Button>
-                <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
-                  {pane.title ?? "Choose a thread from the sidebar"}
-                </span>
-                <Button
-                  size="icon-xs"
-                  variant="ghost"
-                  aria-label={
-                    zoomed
-                      ? `Restore session ${page * MAX_SESSION_PANES + index + 1}`
-                      : `Zoom session ${page * MAX_SESSION_PANES + index + 1}`
-                  }
-                  onClick={() => {
-                    updateWorkspace((current) => ({ ...current, activeId: pane.id }));
-                    setZoomed(!zoomed);
-                  }}
-                >
-                  {zoomed ? <Minimize2Icon /> : <Maximize2Icon />}
-                </Button>
-                <Button
-                  size="icon-xs"
-                  variant="ghost"
-                  aria-label={`Close session ${page * MAX_SESSION_PANES + index + 1}`}
-                  onClick={() => closePane(pane.id)}
-                >
-                  <XIcon />
-                </Button>
-              </div>
-              <SessionFrame
-                pane={pane}
-                active={pane.id === activeId}
-                index={page * MAX_SESSION_PANES + index}
-                register={(frame) => {
-                  if (frame) frames.current.set(pane.id, frame);
-                  else frames.current.delete(pane.id);
+        <div className="relative min-h-0 flex-1">
+          {panes.length === 0 ? (
+            <div className="absolute inset-0 flex items-center justify-center p-6 text-sm text-muted-foreground">
+              No sessions loaded. Connect the server, then refresh sessions or enable Include
+              settled.
+            </div>
+          ) : null}
+          {workspaces.map((item) => {
+            const selected = item.id === selectedId;
+            const { page: itemPage, panes: visiblePanes } = sessionWorkspacePage(item);
+            const itemActiveId = visiblePanes.some((pane) => pane.id === item.activeId)
+              ? item.activeId
+              : (visiblePanes[0]?.id ?? null);
+            return (
+              <div
+                key={item.id}
+                role="tabpanel"
+                aria-label={item.label}
+                aria-hidden={!selected}
+                inert={!selected}
+                className={cn(
+                  "absolute inset-0 grid min-h-0 grid-rows-1 gap-1 overflow-hidden p-1",
+                  (!selected || visiblePanes.length === 0) && "invisible pointer-events-none",
+                )}
+                style={{
+                  gridTemplateColumns: `repeat(${selected && zoomed ? 1 : Math.max(1, visiblePanes.length)}, minmax(0, 1fr))`,
                 }}
-              />
-            </section>
-          ))}
+              >
+                {visiblePanes.map((pane, index) => (
+                  <section
+                    key={`${item.id}:${item.revision}:${pane.id}`}
+                    aria-label={`Session ${itemPage * MAX_SESSION_PANES + index + 1}`}
+                    className={cn(
+                      "flex min-h-0 min-w-0 flex-col overflow-hidden rounded-md border",
+                      pane.id === itemActiveId ? "border-ring" : "border-border",
+                      selected && zoomed && pane.id !== itemActiveId && "hidden",
+                    )}
+                  >
+                    <div className="flex shrink-0 items-center gap-1 border-b bg-muted/40 px-2 py-1">
+                      <Button
+                        size="compact"
+                        variant="ghost"
+                        aria-pressed={pane.id === itemActiveId}
+                        onClick={() => focusPane(pane.id)}
+                      >
+                        Session {itemPage * MAX_SESSION_PANES + index + 1}
+                      </Button>
+                      <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
+                        {pane.title ?? "Choose a thread from the sidebar"}
+                      </span>
+                      <Button
+                        size="icon-xs"
+                        variant="ghost"
+                        aria-label={
+                          selected && zoomed
+                            ? `Restore session ${itemPage * MAX_SESSION_PANES + index + 1}`
+                            : `Zoom session ${itemPage * MAX_SESSION_PANES + index + 1}`
+                        }
+                        onClick={() => {
+                          updateWorkspace((current) => ({ ...current, activeId: pane.id }));
+                          setZoomed(!zoomed);
+                        }}
+                      >
+                        {selected && zoomed ? <Minimize2Icon /> : <Maximize2Icon />}
+                      </Button>
+                      <Button
+                        size="icon-xs"
+                        variant="ghost"
+                        aria-label={`Close session ${itemPage * MAX_SESSION_PANES + index + 1}`}
+                        onClick={() => closePane(pane.id)}
+                      >
+                        <XIcon />
+                      </Button>
+                    </div>
+                    <SessionFrame
+                      pane={pane}
+                      active={selected && pane.id === itemActiveId}
+                      index={itemPage * MAX_SESSION_PANES + index}
+                      register={(frame) => {
+                        if (frame) frames.current.set(sessionFrameKey(item.id, pane.id), frame);
+                        else frames.current.delete(sessionFrameKey(item.id, pane.id));
+                      }}
+                    />
+                  </section>
+                ))}
+              </div>
+            );
+          })}
         </div>
         <div className="shrink-0 border-t px-3 py-1 text-xs text-muted-foreground">
           Ctrl+Alt+S server · Ctrl+Alt+P project · Ctrl+Alt+1–8 workspace · Ctrl+Alt+←/→ pane ·
